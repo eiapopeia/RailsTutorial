@@ -1,4 +1,5 @@
 Tutorial03StaticPages::Application.routes.draw do
+  resources :users
 
   match '/contact', :to => 'pages#contact'
   match '/about',   :to => 'pages#about'
@@ -13,8 +14,6 @@ Tutorial03StaticPages::Application.routes.draw do
   get "pages/about"
   
   get "pages/help"
-  
-  get "users/new"
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
