@@ -9,6 +9,8 @@ gem 'sqlite3-ruby', :require => 'sqlite3'
 
 gem 'gravatar_image_tag', '0.1.0' # for the profile images
 
+gem 'will_paginate', '3.0.pre2' # enables site paination
+
 # Use unicorn as the web server
 # gem 'unicorn'
 
@@ -36,6 +38,7 @@ gem 'gravatar_image_tag', '0.1.0' # for the profile images
 group :development do
   gem 'rspec-rails', '2.1.0'
   gem 'annotate-models', '1.0.4'
+  gem 'faker', '0.3.1'
 end
 
 group :test do
