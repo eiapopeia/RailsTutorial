@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   
   # Setting the rights with an extra method (only for needet actions)
   before_filter :authenticate, :only => [:index, :edit, :update]
+  before_filter :not_logged_in,:only => [:create, :new]
   before_filter :correct_user, :only => [:edit, :update]
   before_filter :admin_user,   :only => :destroy
   
@@ -48,8 +49,13 @@ class UsersController < ApplicationController
   end
   
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed."
+    @user_to_destroy = User.find(params[:id])
+    if current_user == @user_to_destroy
+      flash[:error] = "You can not delete your own account."
+    else
+      @user_to_destroy.destroy
+      flash[:success] = "User destroyed."
+    end
     redirect_to users_path
   end
   
@@ -57,6 +63,10 @@ class UsersController < ApplicationController
 
     def authenticate
       deny_access unless signed_in?
+    end
+    
+    def not_logged_in
+      redirect_to(root_path) if signed_in?
     end
     
     def correct_user

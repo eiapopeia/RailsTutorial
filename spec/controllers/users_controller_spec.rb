@@ -5,6 +5,19 @@ describe UsersController do
 
   describe "GET 'new'" do
     
+    describe "for signed-in users" do
+      
+      before(:each) do
+        @user = Factory(:user)
+        test_sign_in(@user);
+      end
+
+      it "should deny access to 'new'" do
+        post :new
+        response.should redirect_to(root_path)
+      end
+    end
+    
     it "should be successful" do
       get :new
       response.should be_success
@@ -104,6 +117,11 @@ describe UsersController do
         end
       end
       
+      it "should not show delete links for non admin users" do
+        get :index
+        response.should_not have_selector("a", :content => "delete")
+      end
+      
       it "should paginate users" do
         get :index
         response.should have_selector("div.pagination")
@@ -112,6 +130,19 @@ describe UsersController do
                                            :content => "2")
         response.should have_selector("a", :href => "/users?page=2",
                                            :content => "Next")
+      end
+    end
+    
+    describe "for admin users" do
+      
+      before(:each) do
+        admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(admin)
+      end
+      
+      it "should show delete links for admin users" do
+        get :index
+        response.should have_selector("a", :content => "delete")
       end
     end
   end
@@ -142,14 +173,29 @@ describe UsersController do
   end
 
 	describe "POST 'create'" do
+	  
+	  describe "for signed-in users" do
+	    
+	    before(:each) do
+	      @user = Factory(:user)
+        test_sign_in(@user);
+        @attr = { :name => "New User", :email => "user@example.com",
+                  :password => "foobar", :password_confirmation => "foobar" }
+	    end
+
+      it "should deny access to 'create'" do
+        post :create, :user => @attr
+        response.should redirect_to(root_path)
+      end
+    end
 
     describe "failure" do
-
+      
       before(:each) do
         @attr = { :name => "", :email => "", :password => "",
                   :password_confirmation => "" }
       end
-
+      
       it "should not create a user" do
         lambda do
           post :create, :user => @attr
@@ -295,7 +341,7 @@ describe UsersController do
     describe "as a non-signed-in user" do
       it "should deny access" do
         delete :destroy, :id => @user
-        response.should redirect_to(signin_path)
+        response.should redirect_to(root_path)
       end
     end
 
@@ -310,8 +356,8 @@ describe UsersController do
     describe "as an admin user" do
 
       before(:each) do
-        admin = Factory(:user, :email => "admin@example.com", :admin => true)
-        test_sign_in(admin)
+        @admin = Factory(:user, :email => "admin@example.com", :admin => true)
+        test_sign_in(@admin)
       end
 
       it "should destroy the user" do
@@ -323,6 +369,12 @@ describe UsersController do
       it "should redirect to the users page" do
         delete :destroy, :id => @user
         response.should redirect_to(users_path)
+      end
+
+      it "admin should not be able to delete own account" do        
+        lambda do
+          delete :destroy, :id => @admin
+        end.should_not change(User, :count)
       end
     end
   end
