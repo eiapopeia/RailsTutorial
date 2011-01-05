@@ -1,10 +1,10 @@
 class UsersController < ApplicationController
   
   # Setting the rights with an extra method (only for needet actions)
-  before_filter :authenticate, :only => [:index, :edit, :update]
-  before_filter :not_logged_in,:only => [:create, :new]
-  before_filter :correct_user, :only => [:edit, :update]
-  before_filter :admin_user,   :only => :destroy
+  before_filter :authenticate, :except => [:show, :new, :create]
+  before_filter :not_logged_in,:only   => [:create, :new]
+  before_filter :correct_user, :only   => [:edit, :update]
+  before_filter :admin_user,   :only   => :destroy
   
   def new
     @user = User.new
@@ -28,6 +28,20 @@ class UsersController < ApplicationController
     @user       = User.find(params[:id])
     @title      = @user.name
     @microposts = @user.microposts.paginate(:page => params[:page])
+  end
+  
+  def following
+    @title  = "Following"
+    @user   = User.find(params[:id])
+    @users  = @user.following.paginate(:page => params[:page])
+    render 'show_follow'
+  end
+
+  def followers
+    @title = "Followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(:page => params[:page])
+    render 'show_follow'
   end
   
   def index
